@@ -1,0 +1,16 @@
+* image-map
+** About
+Image transformation using complex mapping.
+
+** License
+ISC
+
+
+Copyright (c) 2019 Jeremiah LaRocco <jeremiah_larocco@fastmail.com>
+
+
+
+
+* Plan
+** TODO Implement transform where z -> z*z
+
