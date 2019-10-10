@@ -1,4 +1,4 @@
-;;;; package.lisp
+;; package.lisp
 ;;
 ;; Copyright (c) 2019 Jeremiah LaRocco <jeremiah_larocco@fastmail.com>
 
@@ -41,3 +41,57 @@
             (outf (osicat-posix:stat out-file-name)))
        ;; Should probably do an image diff or something, but this is good enough for now :-/
        (is-true (osicat-posix:stat-size inf) (osicat-posix:stat-size outf))))))
+
+(test complex-to-image
+  (let ((map (create-mapping :bottom-left (complex -1.0 -1.0)
+                             :top-right (complex 1.0 1.0)
+                             :width 100
+                             :height 100)))
+    (flet ((complex-to-complex (pt)
+             (multiple-value-bind (i j) (complex-to-image pt map)
+             (image-to-complex i j map)))
+           (image-to-image (i j)
+             (complex-to-image (image-to-complex i j map) map)))
+
+      (loop for (i j) on '(75 82
+                           54 34
+                           71 94
+                           99 54
+                           80 37
+                           87 19
+                           15 16
+                           67 78
+                           47 66
+                           97 85)
+         by #'cddr
+         do
+           (multiple-value-bind (new-i new-j) (image-to-image i j)
+             (is-true (= i new-i))
+             (is-true (= j new-j))))
+
+      (dolist (pt '(#C(-0.07311033278174417 -0.40901662191991717)
+                    #C(0.80369449329458 -0.8119645720101363)
+                    #C(0.1852823024844823 -0.021227601174207855)
+                    #C(-0.24417913079456177 -0.2528985738602074)
+                    #C(-0.2659561429776729 0.4739386442751914)
+                    #C(-0.4975246128672324 0.12091001374270816)
+                    #C(-0.6754963313697115 0.7175435228288656)
+                    #C(0.10285053942484135 0.947168179635975)
+                    #C(0.7434339306215563 0.7871356120870519)
+                    #C(0.22539731609709834 -0.9659664276316606)))
+        (is-true (= (complex-to-complex pt) pt))))
+
+    ;; Test a few important values
+    (is-true (= (image-to-complex 0 0 map)
+                (complex -1.0 1.0)))
+    (is-true (= (image-to-complex 0 100 map)
+                (complex -1.0 -1.0)))
+    (is-true (= (image-to-complex 100 100 map)
+                (complex 1.0 -1.0)))
+    (is-true (= (image-to-complex 100 0 map)
+                (complex 1.0 1.0)))
+    (is-true (= (image-to-complex 100 0 map)
+                (complex 1.0 1.0)))
+    (multiple-value-bind (i j) (complex-to-image (complex 0.0 0.0) map)
+      (is-true (= i 49))
+      (is-true (= j 49)))))

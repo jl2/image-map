@@ -17,4 +17,8 @@
 
 (defpackage :image-map
   (:use #:cl #:j-utils #:alexandria)
-  (:export #:transform))
+  (:export #:transform
+           #:create-mapping
+           #:mapping
+           #:image-to-complex
+           #:complex-to-image))
