@@ -36,7 +36,11 @@
           (aref img x y 1)
           (aref img x y 2)))
 
-(defun transform (&key (in-file-name) (out-file-name))
+(defun transform (&key
+                    (function #'identity)
+                    (in-file-name)
+                    (out-file-name))
+  (declare (ignorable function))
   (let* ((img (png:decode-file in-file-name))
          (new-img (png:copy-image img)))
     (png:encode-file new-img out-file-name)))

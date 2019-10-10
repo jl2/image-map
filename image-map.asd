@@ -21,7 +21,7 @@
   :license  "ISC"
   :version "0.0.1"
   :serial t
-  :depends-on (#:png #:j-utils #:alexandria)
+  :depends-on (#:png #:j-utils #:alexandria #:osicat)
   :components ((:file "package")
                (:file "image-map"))
   :in-order-to ((test-op (test-op image-map.test))))

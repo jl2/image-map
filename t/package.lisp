@@ -33,6 +33,11 @@
                       "t/examples/triangles.png")))
    (uiop:with-temporary-file (:pathname out-file-name :keep t)
      (format t "Writing identity transform image to ~a~%" out-file-name)
-     (is-true (transform 
+     (is-true (transform
+               :function #'identity
                :in-file-name in-file-name
-               :out-file-name out-file-name)))))
+               :out-file-name out-file-name))
+     (let* ((inf (osicat-posix:stat in-file-name))
+            (outf (osicat-posix:stat out-file-name)))
+       ;; Should probably do an image diff or something, but this is good enough for now :-/
+       (is-true (osicat-posix:stat-size inf) (osicat-posix:stat-size outf))))))
