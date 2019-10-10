@@ -12,5 +12,7 @@ Copyright (c) 2019 Jeremiah LaRocco <jeremiah_larocco@fastmail.com>
 
 
 * Plan
+** TODO Add tests and implementation for mapping class.
+Try to use TDD for this.
 ** TODO Implement transform where z -> z*z
 

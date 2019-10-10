@@ -17,19 +17,26 @@
 
 (in-package :image-map)
 
+(defclass mapping ()
+  ((bottom-left :initform (complex -1.0 -1.0) :initarg :bottom-left)
+   (top-right :initform (complex 1.0 1.0) :initarg :top-right)
+   (width :initform 100 :initarg :width)
+   (height :initform 100 :initarg :height))
+  (:documentation "A mapping between image coordinates and the complex plane."))
+
 (defun set-pixel-png (img x y r g b)
-  "Set a pixel in im at location x,y to color (r,g,b)"
+  "Set a pixel in im at location x,y to color (r,g,b)."
   (setf (aref img x y 0) r)
   (setf (aref img x y 1) g)
   (setf (aref img x y 2) b))
 
-(defun get-pixel-png (img x y r g b)
-  "Set a pixel in im at location x,y to color (r,g,b)"
+(defun get-pixel-png (img x y)
+  "Return pixel value at location x,y."
   (values (aref img x y 0)
           (aref img x y 1)
           (aref img x y 2)))
 
 (defun transform (&key (in-file-name) (out-file-name))
-  (png:encode-file
-   (png:decode-file in-file-name)
-   out-file-name))
+  (let* ((img (png:decode-file in-file-name))
+         (new-img (png:copy-image img)))
+    (png:encode-file new-img out-file-name)))
