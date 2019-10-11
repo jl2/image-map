@@ -82,20 +82,16 @@
         (is (same-pixel pt new-pt map))))
 
     ;; Test a few important values
-    (is (= 
-         (complex -1.0 1.0)
-         (image-to-complex 0 0 map)))
+    (is (= (complex -1.0 1.0)
+           (image-to-complex 0 0 map)))
     (is (= (complex -1.0 -1.0)
            (image-to-complex 0 100 map)))
-    (is (= 
-         (complex 1.0 -1.0)
-         (image-to-complex 100 100 map)))
-    (is (= 
-         (complex 1.0 1.0)
-         (image-to-complex 100 0 map)))
-    (is (= 
-         (complex 1.0 1.0)
-         (image-to-complex 100 0 map)))
+    (is (= (complex 1.0 -1.0)
+           (image-to-complex 100 100 map)))
+    (is (= (complex 1.0 1.0)
+           (image-to-complex 100 0 map)))
+    (is (= (complex 1.0 1.0)
+           (image-to-complex 100 0 map)))
     (multiple-value-bind (i j) (complex-to-image (complex 0.0 0.0) map)
       (is (= 50 i))
       (is (= 50 j)))))

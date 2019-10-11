@@ -70,31 +70,47 @@
 
 (defun set-pixel-png (img x y r g b)
   "Set a pixel in im at location x,y to color (r,g,b)."
-  (setf (aref img x y 0) r)
-  (setf (aref img x y 1) g)
-  (setf (aref img x y 2) b))
+  (when (and (>= x 0) (>= y 0)
+             (< x (png:image-width img))
+             (< y (png:image-height img)))
+    (setf (aref img y x 0) r)
+    (setf (aref img y x 1) g)
+    (setf (aref img y x 2) b)))
 
 (defun get-pixel-png (img x y)
   "Return pixel value at location x,y."
-  (values (aref img x y 0)
-          (aref img x y 1)
-          (aref img x y 2)))
+  (if (and (>= x 0) (>= y 0)
+           (< x (png:image-width img))
+           (< y (png:image-height img)))
+      (values (aref img y x 0)
+              (aref img y x 1)
+              (aref img y x 2))
+      (values 0 0 0)))
 
 (defun transform (&key
                     (function #'identity)
-                    (top-left (complex -1.0 -1.0))
-                    (bottom-right (complex 1.0 1.0))
+                    (top-left (complex -1.0 1.0))
+                    (bottom-right (complex 1.0 -1.0))
                     (in-file-name)
                     (out-file-name))
   (declare (ignorable function))
   (let* ((img (png:decode-file in-file-name))
-         (new-img (png:copy-image img))
-         (map (make-instance 'mapping
-                             :width (png:image-width img)
-                             :height (png:image-height img)
-                             :top-left top-left
-                             :bottom-right bottom-right)))
-    (declare (ignorable map))
+         (width (png:image-width img))
+         (height (png:image-height img))
+         (new-img (png:make-image height width 3))
+         (map (create-mapping
+               :width width
+               :height height
+               :top-left top-left
+               :bottom-right bottom-right)))
+    (dotimes (i width)
+      (dotimes (j height)
+        (let* ((pt (image-to-complex i j map))
+               (new-pt (funcall function pt)))
+          (multiple-value-bind (new-i new-j) (complex-to-image new-pt map)
+            (multiple-value-bind (r g b) (get-pixel-png img new-i new-j)
+              ;; (format t "i ~a j ~a pt ~a color ~a ~a ~a new-pt ~a new-i ~a new-j ~a~%" i j pt r g b new-pt new-i new-j)
+              (set-pixel-png new-img i j r g b))))))
     (ensure-directories-exist out-file-name)
     (png:encode-file new-img out-file-name)))
 
