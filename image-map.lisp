@@ -43,7 +43,7 @@
 (defun image-to-complex (i j map)
   (with-slots (bottom-left top-right width height r-diff i-diff) map
     (+ bottom-left (complex (* i r-diff)
-                            (* j i-diff)))))
+                            (* (- height j) i-diff)))))
 
 (defun complex-to-image (pt map)
   (with-slots (bottom-left top-right width height r-diff i-diff) map
