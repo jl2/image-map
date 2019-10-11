@@ -50,6 +50,14 @@
     (let ((offset (- pt bottom-left)))
       (values (* (realpart offset) r-diff width) (* (imagpart offset) i-diff height)))))
 
+(defun complex-to-complex (pt map)
+  (multiple-value-bind (i j) (complex-to-image pt map)
+    (image-to-complex i j map)))
+
+(defun image-to-image (i j map)
+  (complex-to-image
+   (image-to-complex i j map) map))
+
 (defun set-pixel-png (img x y r g b)
   "Set a pixel in im at location x,y to color (r,g,b)."
   (setf (aref img x y 0) r)
@@ -77,4 +85,51 @@
                              :bottom-left bottom-left
                              :top-right top-right)))
     (declare (ignorable map))
+    (ensure-directories-exist out-file-name)
     (png:encode-file new-img out-file-name)))
+
+(defun generate-log-grid-png (output-file-name &key
+                                                 (width 512)
+                                                 (height 512)
+                                                 (x-multiplier 2)
+                                                 (y-multiplier 2)
+                                                 (red 255)
+                                                 (green 255)
+                                                 (blue 255))
+  (let* ((img (png:make-image height width 3 8)))
+    (loop
+       for x = 1 then (* x-multiplier x)
+       while (<= x width) do
+         (dotimes (y height)
+           (set-pixel-png img (floor (1- x)) y red green blue)))
+    (loop
+       for y = 1 then (* y-multiplier y)
+       while (<= y height) do
+         (dotimes (x width)
+           (set-pixel-png img x (floor (1- y)) red green blue)))
+    (ensure-directories-exist output-file-name)
+    (png:encode-file img output-file-name)))
+
+(defun generate-grid-png (output-file-name &key
+                                             (width 512)
+                                             (height 512)
+                                             (x-count 32)
+                                             (y-count 32)
+                                             (red 255)
+                                             (green 255)
+                                             (blue 255))
+  (let* ((img (png:make-image height width 3 8))
+         (dx (/ (1- width) x-count 1.0))
+         (dy (/ (1- height) y-count 1.0)))
+    (loop
+       for x = 0 then (+ x dx)
+       while (< x width) do
+         (dotimes (y height)
+           (set-pixel-png img (floor x) y red green blue)))
+    (loop
+       for y = 0 then (+ y dy)
+       while (< y height) do
+         (dotimes (x width)
+           (set-pixel-png img x (floor y) red green blue)))
+    (ensure-directories-exist output-file-name)
+    (png:encode-file img output-file-name)))

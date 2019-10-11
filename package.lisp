@@ -21,4 +21,11 @@
            #:create-mapping
            #:mapping
            #:image-to-complex
-           #:complex-to-image))
+           #:complex-to-image
+           #:complex-to-complex
+           #:image-to-image
+           #:set-pixel-png
+           #:get-pixel-png
+           #:generate-grid-png
+           #:generate-log-grid-png
+           ))
