@@ -24,6 +24,7 @@
            #:complex-to-image
            #:complex-to-complex
            #:image-to-image
+           #:same-pixel
            #:set-pixel-png
            #:get-pixel-png
            #:generate-grid-png

@@ -44,11 +44,11 @@
      (let* ((inf (osicat-posix:stat in-file-name))
             (outf (osicat-posix:stat out-file-name)))
        ;; Should probably do an image diff or something, but this is good enough for now :-/
-       (is-true (osicat-posix:stat-size inf) (osicat-posix:stat-size outf))))))
+       (is (= (osicat-posix:stat-size inf) (osicat-posix:stat-size outf)))))))
 
 (test coordinate-conversions
-  (let ((map (create-mapping :bottom-left (complex -1.0 -1.0)
-                             :top-right (complex 1.0 1.0)
+  (let ((map (create-mapping :top-left (complex -1.0 1.0)
+                             :bottom-right (complex 1.0 -1.0)
                              :width 100
                              :height 100)))
     (loop for (i j) on '(75 82
@@ -64,8 +64,8 @@
        by #'cddr
        do
          (multiple-value-bind (new-i new-j) (image-to-image i j map)
-           (is-true (= i new-i))
-           (is-true (= j new-j))))
+           (is (= i new-i))
+           (is (= j new-j))))
 
     (dolist (pt '(#C(-0.07311033278174417 -0.40901662191991717)
                   #C(0.80369449329458 -0.8119645720101363)
@@ -77,19 +77,25 @@
                   #C(0.10285053942484135 0.947168179635975)
                   #C(0.7434339306215563 0.7871356120870519)
                   #C(0.22539731609709834 -0.9659664276316606)))
-      (is-true (= (complex-to-complex pt map) pt)))
+      
+      (let ((new-pt (complex-to-complex pt map)))
+        (is (same-pixel pt new-pt map))))
 
     ;; Test a few important values
-    (is-true (= (image-to-complex 0 0 map)
-                (complex -1.0 1.0)))
-    (is-true (= (image-to-complex 0 100 map)
-                (complex -1.0 -1.0)))
-    (is-true (= (image-to-complex 100 100 map)
-                (complex 1.0 -1.0)))
-    (is-true (= (image-to-complex 100 0 map)
-                (complex 1.0 1.0)))
-    (is-true (= (image-to-complex 100 0 map)
-                (complex 1.0 1.0)))
+    (is (= 
+         (complex -1.0 1.0)
+         (image-to-complex 0 0 map)))
+    (is (= (complex -1.0 -1.0)
+           (image-to-complex 0 100 map)))
+    (is (= 
+         (complex 1.0 -1.0)
+         (image-to-complex 100 100 map)))
+    (is (= 
+         (complex 1.0 1.0)
+         (image-to-complex 100 0 map)))
+    (is (= 
+         (complex 1.0 1.0)
+         (image-to-complex 100 0 map)))
     (multiple-value-bind (i j) (complex-to-image (complex 0.0 0.0) map)
-      (is-true (= i 49))
-      (is-true (= j 49)))))
+      (is (= 50 i))
+      (is (= 50 j)))))

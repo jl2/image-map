@@ -19,36 +19,41 @@
 
 
 (defclass mapping ()
-  ((bottom-left :initform (complex -1.0 -1.0) :initarg :bottom-left)
-   (top-right :initform (complex 1.0 1.0) :initarg :top-right)
+  ((top-left :initform (complex -1.0 -1.0) :initarg :top-left)
+   (bottom-right :initform (complex 1.0 1.0) :initarg :bottom-right)
    (width :initarg :width)
    (height :initarg :height)
+   (r-size :initarg :r-size)
+   (i-size :initarg :i-size)
    (r-diff :initarg :r-diff)
    (i-diff :initarg :i-diff))
   (:documentation "A mapping between image coordinates and the complex plane."))
 
 (defun create-mapping (&key
-                         (bottom-left (complex -1.0 -1.0))
-                         (top-right (complex 1.0 1.0))
+                         (top-left (complex -1.0 -1.0))
+                         (bottom-right (complex 1.0 1.0))
                          (width)
                          (height))
   (make-instance 'mapping
-                 :bottom-left bottom-left
-                 :top-right top-right
+                 :top-left top-left
+                 :bottom-right bottom-right
                  :width width
                  :height height
-                 :r-diff (/ (- (realpart top-right) (realpart bottom-left)) width 1.0)
-                 :i-diff (/ (- (imagpart top-right) (imagpart bottom-left)) height)))
+                 :r-size (- (realpart bottom-right) (realpart top-left))
+                 :i-size (- (imagpart bottom-right) (imagpart top-left))
+                 :r-diff (/ (- (realpart bottom-right) (realpart top-left)) width 1.0)
+                 :i-diff (/ (- (imagpart bottom-right) (imagpart top-left)) height 1.0)))
 
 (defun image-to-complex (i j map)
-  (with-slots (bottom-left top-right width height r-diff i-diff) map
-    (+ bottom-left (complex (* i r-diff)
-                            (* (- height j) i-diff)))))
+  (with-slots (top-left bottom-right width height r-diff i-diff) map
+    (+ top-left (complex (* i r-diff)
+                         (* j i-diff)))))
 
 (defun complex-to-image (pt map)
-  (with-slots (bottom-left top-right width height r-diff i-diff) map
-    (let ((offset (- pt bottom-left)))
-      (values (* (realpart offset) r-diff width) (* (imagpart offset) i-diff height)))))
+  (with-slots (top-left bottom-right width height r-size i-size) map
+    (let ((offset (- (complex (realpart pt) (imagpart pt)) top-left )))
+      (values (round (* (/ (realpart offset) r-size) width))
+              (round (* (/ (imagpart offset) i-size) height))))))
 
 (defun complex-to-complex (pt map)
   (multiple-value-bind (i j) (complex-to-image pt map)
@@ -57,6 +62,11 @@
 (defun image-to-image (i j map)
   (complex-to-image
    (image-to-complex i j map) map))
+
+(defun same-pixel (pt1 pt2 map)
+  (multiple-value-bind (i1 j1) (complex-to-image pt1 map)
+    (multiple-value-bind (i2 j2) (complex-to-image pt2 map)
+      (and (= i1 i2) (= j1 j2)))))
 
 (defun set-pixel-png (img x y r g b)
   "Set a pixel in im at location x,y to color (r,g,b)."
@@ -72,8 +82,8 @@
 
 (defun transform (&key
                     (function #'identity)
-                    (bottom-left (complex -1.0 -1.0))
-                    (top-right (complex 1.0 1.0))
+                    (top-left (complex -1.0 -1.0))
+                    (bottom-right (complex 1.0 1.0))
                     (in-file-name)
                     (out-file-name))
   (declare (ignorable function))
@@ -82,8 +92,8 @@
          (map (make-instance 'mapping
                              :width (png:image-width img)
                              :height (png:image-height img)
-                             :bottom-left bottom-left
-                             :top-right top-right)))
+                             :top-left top-left
+                             :bottom-right bottom-right)))
     (declare (ignorable map))
     (ensure-directories-exist out-file-name)
     (png:encode-file new-img out-file-name)))
